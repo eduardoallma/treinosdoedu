@@ -41,7 +41,7 @@ export default function Dashboard() {
   const lastWorkout = logs.length ? logs[logs.length - 1] : null;
 
   return (
-    <PageShell title="GymLog">
+    <PageShell title="Treinos do Edu">
       {/* Stats */}
       <div className="mt-4 grid grid-cols-3 gap-3">
         {[
