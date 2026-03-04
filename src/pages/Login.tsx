@@ -8,11 +8,15 @@ import { login } from "@/lib/auth";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(username)) {
+    setLoading(true);
+    const success = await login(username);
+    setLoading(false);
+    if (success) {
       navigate("/", { replace: true });
     } else {
       setError(true);
@@ -46,8 +50,8 @@ export default function Login() {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={!username.trim()}>
-          Entrar
+        <Button type="submit" className="w-full" disabled={!username.trim() || loading}>
+          {loading ? "Entrando..." : "Entrar"}
         </Button>
       </form>
     </div>

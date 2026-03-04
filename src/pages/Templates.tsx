@@ -1,23 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Copy, Trash2, ChevronDown, ChevronUp, Edit2 } from "lucide-react";
 import PageShell from "@/components/PageShell";
-import { getTemplates, saveTemplates, generateId } from "@/lib/storage";
+import { getTemplates, saveTemplate, deleteTemplate, generateId } from "@/lib/storage";
 import { WorkoutTemplate, ExerciseTemplate } from "@/types/gym";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function Templates() {
-  const [templates, setTemplates] = useState<WorkoutTemplate[]>(getTemplates);
+  const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [exercises, setExercises] = useState<ExerciseTemplate[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  function persist(next: WorkoutTemplate[]) {
+  useEffect(() => {
+    getTemplates().then(setTemplates);
+  }, []);
+
+  async function persist(next: WorkoutTemplate[]) {
     setTemplates(next);
-    saveTemplates(next);
   }
 
   function openNew() {
@@ -34,19 +37,24 @@ export default function Templates() {
     setDialogOpen(true);
   }
 
-  function save() {
+  async function save() {
     if (!name.trim()) return;
     const cleaned = exercises.filter((e) => e.name.trim());
     if (!cleaned.length) return;
+
     if (editId) {
-      persist(templates.map((t) => (t.id === editId ? { ...t, name, exercises: cleaned } : t)));
+      const updated: WorkoutTemplate = { id: editId, name, exercises: cleaned, createdAt: templates.find(t => t.id === editId)?.createdAt ?? new Date().toISOString() };
+      await saveTemplate(updated);
+      setTemplates(templates.map((t) => (t.id === editId ? updated : t)));
     } else {
-      persist([...templates, { id: generateId(), name, exercises: cleaned, createdAt: new Date().toISOString() }]);
+      const newTemplate: WorkoutTemplate = { id: generateId(), name, exercises: cleaned, createdAt: new Date().toISOString() };
+      await saveTemplate(newTemplate);
+      setTemplates([...templates, newTemplate]);
     }
     setDialogOpen(false);
   }
 
-  function duplicate(t: WorkoutTemplate) {
+  async function duplicate(t: WorkoutTemplate) {
     const dup: WorkoutTemplate = {
       ...t,
       id: generateId(),
@@ -54,11 +62,13 @@ export default function Templates() {
       exercises: t.exercises.map((e) => ({ ...e, id: generateId() })),
       createdAt: new Date().toISOString(),
     };
-    persist([...templates, dup]);
+    await saveTemplate(dup);
+    setTemplates([...templates, dup]);
   }
 
-  function remove(id: string) {
-    persist(templates.filter((t) => t.id !== id));
+  async function remove(id: string) {
+    await deleteTemplate(id);
+    setTemplates(templates.filter((t) => t.id !== id));
   }
 
   function addExercise() {

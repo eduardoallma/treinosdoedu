@@ -1,23 +1,32 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import PageShell from "@/components/PageShell";
 import { getWorkoutLogs } from "@/lib/storage";
+import { WorkoutLog } from "@/types/gym";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { format, startOfWeek, isThisWeek } from "date-fns";
+import { format, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function Progress() {
-  const logs = getWorkoutLogs();
+  const [logs, setLogs] = useState<WorkoutLog[]>([]);
 
-  // All unique exercises
+  useEffect(() => {
+    getWorkoutLogs().then(setLogs);
+  }, []);
+
   const exerciseNames = useMemo(() => {
     const names = new Set<string>();
     logs.forEach((l) => l.exercises.forEach((e) => names.add(e.name)));
     return Array.from(names);
   }, [logs]);
 
-  const [selectedExercise, setSelectedExercise] = useState(exerciseNames[0] ?? "");
+  const [selectedExercise, setSelectedExercise] = useState("");
 
-  // Max weight per workout for selected exercise
+  useEffect(() => {
+    if (exerciseNames.length && !selectedExercise) {
+      setSelectedExercise(exerciseNames[0]);
+    }
+  }, [exerciseNames, selectedExercise]);
+
   const exerciseData = useMemo(() => {
     if (!selectedExercise) return [];
     return logs
@@ -29,7 +38,6 @@ export default function Progress() {
       });
   }, [logs, selectedExercise]);
 
-  // Weekly volume
   const weeklyVolume = useMemo(() => {
     const map = new Map<string, number>();
     logs.forEach((l) => {
@@ -50,7 +58,6 @@ export default function Progress() {
 
   return (
     <PageShell title="Evolução">
-      {/* Exercise selector */}
       <div className="mt-4">
         <label className="text-xs font-medium text-muted-foreground">Exercício</label>
         <div className="mt-1 flex gap-2 overflow-x-auto pb-2">
@@ -66,7 +73,6 @@ export default function Progress() {
         </div>
       </div>
 
-      {/* Exercise chart */}
       {exerciseData.length > 0 && (
         <div className="mt-4 rounded-xl bg-card p-4 shadow-sm">
           <p className="mb-3 text-sm font-semibold">Carga Máxima (kg)</p>
@@ -82,7 +88,6 @@ export default function Progress() {
         </div>
       )}
 
-      {/* Volume chart */}
       {weeklyVolume.length > 0 && (
         <div className="mt-4 rounded-xl bg-card p-4 shadow-sm">
           <p className="mb-3 text-sm font-semibold">Volume Semanal (kg)</p>

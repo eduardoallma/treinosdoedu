@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, Plus, Minus } from "lucide-react";
 import PageShell from "@/components/PageShell";
-import { getTemplates, getWorkoutLogs, saveWorkoutLogs, generateId } from "@/lib/storage";
+import { getTemplates, getWorkoutLogs, saveWorkoutLog, generateId } from "@/lib/storage";
 import { WorkoutTemplate, ExerciseLog, SetLog, WorkoutLog } from "@/types/gym";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +10,15 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function ActiveWorkout() {
   const navigate = useNavigate();
-  const templates = getTemplates();
+  const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<WorkoutTemplate | null>(null);
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>([]);
   const [notes, setNotes] = useState("");
   const [startedAt] = useState(new Date().toISOString());
+
+  useEffect(() => {
+    getTemplates().then(setTemplates);
+  }, []);
 
   function startWorkout(t: WorkoutTemplate) {
     setSelectedTemplate(t);
@@ -50,7 +54,7 @@ export default function ActiveWorkout() {
     setExerciseLogs(next);
   }
 
-  function finishWorkout() {
+  async function finishWorkout() {
     if (!selectedTemplate) return;
     const log: WorkoutLog = {
       id: generateId(),
@@ -61,8 +65,7 @@ export default function ActiveWorkout() {
       startedAt,
       completedAt: new Date().toISOString(),
     };
-    const logs = getWorkoutLogs();
-    saveWorkoutLogs([...logs, log]);
+    await saveWorkoutLog(log);
     navigate("/history");
   }
 

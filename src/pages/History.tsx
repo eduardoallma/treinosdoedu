@@ -1,22 +1,27 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ChevronDown, ChevronUp, Pencil, Trash2, Save, X, Plus, Minus } from "lucide-react";
 import PageShell from "@/components/PageShell";
-import { getWorkoutLogs, getTemplates, saveWorkoutLogs } from "@/lib/storage";
+import { getWorkoutLogs, getTemplates, saveWorkoutLog, deleteWorkoutLog } from "@/lib/storage";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { WorkoutLog, SetLog } from "@/types/gym";
+import { WorkoutLog, WorkoutTemplate, SetLog } from "@/types/gym";
 import { useToast } from "@/hooks/use-toast";
 
 export default function History() {
-  const [logs, setLogs] = useState(getWorkoutLogs);
-  const templates = getTemplates();
+  const [logs, setLogs] = useState<WorkoutLog[]>([]);
+  const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<WorkoutLog | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    getWorkoutLogs().then(setLogs);
+    getTemplates().then(setTemplates);
+  }, []);
 
   const filtered = useMemo(() => {
     const sorted = [...logs].reverse();
@@ -34,20 +39,18 @@ export default function History() {
     setEditDraft(null);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editDraft) return;
-    const updated = logs.map((l) => (l.id === editDraft.id ? editDraft : l));
-    saveWorkoutLogs(updated);
-    setLogs(updated);
+    await saveWorkoutLog(editDraft);
+    setLogs(logs.map((l) => (l.id === editDraft.id ? editDraft : l)));
     setEditingId(null);
     setEditDraft(null);
     toast({ title: "Treino atualizado" });
   };
 
-  const deleteLog = (id: string) => {
-    const updated = logs.filter((l) => l.id !== id);
-    saveWorkoutLogs(updated);
-    setLogs(updated);
+  const handleDelete = async (id: string) => {
+    await deleteWorkoutLog(id);
+    setLogs(logs.filter((l) => l.id !== id));
     setExpandedId(null);
     setEditingId(null);
     setEditDraft(null);
@@ -120,13 +123,12 @@ export default function History() {
 
               {(expandedId === log.id || editing) && (
                 <div className="mt-3 space-y-3 border-t pt-3">
-                  {/* Action buttons */}
                   {!editing && (
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => startEdit(log)} className="gap-1.5">
                         <Pencil className="h-3.5 w-3.5" /> Editar
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => deleteLog(log.id)} className="gap-1.5 text-destructive hover:text-destructive">
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(log.id)} className="gap-1.5 text-destructive hover:text-destructive">
                         <Trash2 className="h-3.5 w-3.5" /> Excluir
                       </Button>
                     </div>
@@ -168,7 +170,6 @@ export default function History() {
                     </div>
                   ))}
 
-                  {/* Notes */}
                   {editing ? (
                     <textarea
                       value={editDraft?.notes ?? ""}
@@ -181,7 +182,6 @@ export default function History() {
                     data.notes && <p className="mt-2 text-xs text-muted-foreground italic">"{data.notes}"</p>
                   )}
 
-                  {/* Save / Cancel */}
                   {editing && (
                     <div className="flex gap-2 pt-1">
                       <Button size="sm" onClick={saveEdit} className="gap-1.5">
