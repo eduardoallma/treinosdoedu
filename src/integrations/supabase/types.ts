@@ -14,7 +14,97 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      templates: {
+        Row: {
+          created_at: string
+          exercises: Json
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercises?: Json
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercises?: Json
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "templates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      workout_logs: {
+        Row: {
+          completed_at: string
+          exercises: Json
+          id: string
+          notes: string | null
+          started_at: string
+          template_id: string | null
+          template_name: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          exercises?: Json
+          id?: string
+          notes?: string | null
+          started_at?: string
+          template_id?: string | null
+          template_name: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          exercises?: Json
+          id?: string
+          notes?: string | null
+          started_at?: string
+          template_id?: string | null
+          template_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

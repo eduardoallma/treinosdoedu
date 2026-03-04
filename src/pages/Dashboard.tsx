@@ -1,15 +1,21 @@
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dumbbell, Flame, TrendingUp, ChevronRight } from "lucide-react";
 import PageShell from "@/components/PageShell";
 import { getWorkoutLogs, getTemplates } from "@/lib/storage";
+import { WorkoutLog, WorkoutTemplate } from "@/types/gym";
 import { format, isThisWeek, differenceInCalendarDays, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const logs = getWorkoutLogs();
-  const templates = getTemplates();
+  const [logs, setLogs] = useState<WorkoutLog[]>([]);
+  const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
+
+  useEffect(() => {
+    getWorkoutLogs().then(setLogs);
+    getTemplates().then(setTemplates);
+  }, []);
 
   const weekStats = useMemo(() => {
     const thisWeekLogs = logs.filter((l) => isThisWeek(new Date(l.completedAt), { weekStartsOn: 1 }));
@@ -42,7 +48,6 @@ export default function Dashboard() {
 
   return (
     <PageShell title="Treinos do Edu">
-      {/* Stats */}
       <div className="mt-4 grid grid-cols-3 gap-3">
         {[
           { icon: Dumbbell, label: "Dias", value: weekStats.daysThisWeek },
@@ -57,7 +62,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Quick Start */}
       <button
         onClick={() => navigate("/workout")}
         className="mt-6 w-full rounded-xl bg-primary py-4 text-center font-semibold text-primary-foreground shadow-md transition-transform active:scale-[0.98]"
@@ -65,7 +69,6 @@ export default function Dashboard() {
         Iniciar Treino
       </button>
 
-      {/* Last Workout */}
       {lastWorkout && (
         <button
           onClick={() => navigate("/history")}
@@ -82,7 +85,6 @@ export default function Dashboard() {
         </button>
       )}
 
-      {/* No templates hint */}
       {!templates.length && (
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">Crie sua primeira ficha de treino para começar!</p>
