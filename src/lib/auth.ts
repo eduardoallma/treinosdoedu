@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseExternal as supabase } from "@/lib/supabaseExternal";
 
 const ACTIVE_USER_KEY = "gymlog_active_user";
 const ACTIVE_USER_ID_KEY = "gymlog_active_user_id";
