@@ -83,6 +83,12 @@ export default function History() {
 
   const isEditing = (id: string) => editingId === id;
 
+  function toLocalDatetimeValue(isoString: string): string {
+    const d = new Date(isoString);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
   return (
     <PageShell title="Histórico">
       {/* Filter */}
@@ -180,6 +186,29 @@ export default function History() {
                     />
                   ) : (
                     data.notes && <p className="mt-2 text-xs text-muted-foreground italic">"{data.notes}"</p>
+                  )}
+
+                  {editing && editDraft && (
+                    <div className="space-y-2 border-t pt-3">
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Início do treino</label>
+                        <input
+                          type="datetime-local"
+                          value={toLocalDatetimeValue(editDraft.startedAt)}
+                          onChange={(e) => setEditDraft({ ...editDraft, startedAt: new Date(e.target.value).toISOString() })}
+                          className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Conclusão do treino</label>
+                        <input
+                          type="datetime-local"
+                          value={toLocalDatetimeValue(editDraft.completedAt)}
+                          onChange={(e) => setEditDraft({ ...editDraft, completedAt: new Date(e.target.value).toISOString() })}
+                          className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                      </div>
+                    </div>
                   )}
 
                   {editing && (
