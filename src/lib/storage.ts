@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseExternal as supabase } from "@/lib/supabaseExternal";
 import { getActiveUserId } from "./auth";
 import { WorkoutTemplate, WorkoutLog, ExerciseTemplate, ExerciseLog } from "@/types/gym";
 
