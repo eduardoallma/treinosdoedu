@@ -1,12 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, ClipboardList, Dumbbell, Clock, TrendingUp } from "lucide-react";
+import { Home, ClipboardList, Dumbbell, Clock } from "lucide-react";
 
 const tabs = [
   { path: "/", icon: Home, label: "Início" },
   { path: "/templates", icon: ClipboardList, label: "Fichas" },
   { path: "/workout", icon: Dumbbell, label: "Treinar" },
   { path: "/history", icon: Clock, label: "Histórico" },
-  { path: "/progress", icon: TrendingUp, label: "Evolução" },
 ];
 
 export default function BottomNav() {
