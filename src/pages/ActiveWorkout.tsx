@@ -13,7 +13,7 @@ function toLocalDatetimeValue(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-const REST_SECONDS = 60;
+const REST_SECONDS = 90;
 
 export default function ActiveWorkout() {
   const navigate = useNavigate();
